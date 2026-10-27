@@ -1,0 +1,13 @@
+# Résultats d'une migration : contiennent une copie de l'historique et des favoris
+resultat-migration/
+
+# Archive de release construite localement
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# macOS
+.DS_Store

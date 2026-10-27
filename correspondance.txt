@@ -1,0 +1,16 @@
+# Correspondance entre espaces Arc et profils Chrome (facultatif)
+#
+# Par défaut, en mode « un profil Chrome par espace », chaque espace Arc va
+# dans le profil Chrome qui porte exactement le même nom (majuscules indifférentes).
+#
+# Ce fichier sert à :
+#   - envoyer un espace vers un profil Chrome qui a un autre nom :
+#         Nom de l'espace Arc = Nom du profil Chrome
+#   - ne pas migrer un espace du tout (valable dans les deux modes) :
+#         Nom de l'espace Arc = ignorer
+#
+# Une règle par ligne. Les lignes qui commencent par # ne sont pas lues.
+# Exemples (retire le # devant pour les activer) :
+#
+# Clients = Travail
+# Ancien client = ignorer

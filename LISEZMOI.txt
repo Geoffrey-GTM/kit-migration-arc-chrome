@@ -1,0 +1,158 @@
+MIGRER D'ARC VERS GOOGLE CHROME (Mac)
+=====================================
+
+Ce kit récupère dans Chrome, pour chaque espace Arc :
+  • les favoris (icônes du haut), les onglets épinglés et leurs dossiers,
+    ainsi que les onglets ouverts ;
+  • l'historique de navigation ;
+  • la liste des extensions, ouvertes dans le Chrome Web Store pour les réinstaller.
+Les mots de passe se transfèrent à la main (étape 6).
+
+Arc n'est jamais modifié. Les fichiers de Chrome sont sauvegardés avant toute
+modification, et le script peut être relancé sans créer de doublons.
+
+Durée : environ 15 minutes.
+
+
+1. RÉCUPÉRER LE KIT
+-------------------
+Télécharge la dernière version (Kit-migration-Arc-Chrome-vX.Y.Z.zip) :
+    https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/latest
+Double-clique sur le fichier .zip dans ton dossier Téléchargements.
+Tu obtiens un dossier « Kit-migration-Arc-Chrome ». Laisse-le dans Téléchargements,
+et garde ensemble les deux fichiers du script (migrer-arc-vers-chrome.sh et
+migrer_arc_chrome.py).
+
+
+2. CHOISIR SON ORGANISATION DANS CHROME
+---------------------------------------
+Le script te proposera deux options :
+
+  Option 1 — Un profil Chrome par espace Arc (ex. un profil par client)
+    Crée dans Chrome un profil pour chaque espace, avec EXACTEMENT le même nom
+    que l'espace Arc (les majuscules n'ont pas d'importance) :
+    icône de profil en haut à droite de Chrome › Ajouter › (connexion Google
+    ou « Continuer sans compte ») › nom du profil.
+    Pour renommer un profil existant : chrome://settings/manageProfile
+    Un espace sans profil du même nom est simplement ignoré.
+
+  Option 2 — Tout dans un seul profil Chrome
+    Rien à préparer. Chaque espace devient un dossier « Arc – <nom de l'espace> »
+    dans la barre de favoris, et tes favoris Arc sont regroupés dans « Arc – favoris ».
+
+Pour NE PAS migrer certains espaces : ouvre « correspondance.txt » et ajoute
+une ligne « Nom de l'espace = ignorer » par espace.
+
+
+3. DONNER L'ACCÈS COMPLET AU DISQUE À TERMINAL
+----------------------------------------------
+macOS protège les dossiers de Chrome : sans cette autorisation, le script ne
+peut pas y écrire.
+  Réglages Système › Confidentialité et sécurité › Accès complet au disque
+  › active « Terminal ». S'il n'est pas dans la liste : bouton +, puis
+  Applications › Utilitaires › Terminal.
+Si Terminal était ouvert, quitte-le (Cmd+Q) et rouvre-le.
+Tu pourras retirer cette autorisation une fois la migration terminée.
+
+
+4. QUITTER ARC ET CHROME
+------------------------
+Cmd+Q sur chacun des deux (fermer la fenêtre ne suffit pas).
+
+
+5. LANCER LA MIGRATION
+----------------------
+Ouvre Terminal (Applications › Utilitaires › Terminal), colle cette ligne
+et appuie sur Entrée :
+
+    bash ~/Downloads/Kit-migration-Arc-Chrome/migrer-arc-vers-chrome.sh
+
+(Si le dossier est ailleurs : tape « bash » suivi d'un espace, glisse le
+fichier migrer-arc-vers-chrome.sh dans la fenêtre de Terminal, puis Entrée.)
+
+Le script :
+  • liste tes espaces Arc et tes profils Chrome ;
+  • te demande l'organisation (1 ou 2) ;
+  • affiche ce qu'il va faire et attend ta confirmation (tape o puis Entrée) ;
+  • propose ensuite d'ouvrir Chrome sur les extensions à réinstaller :
+    clique sur « Ajouter à Chrome » dans chaque onglet.
+
+Dans Chrome, affiche la barre de favoris avec Cmd+Maj+B.
+
+
+6. TRANSFÉRER LES MOTS DE PASSE (à la main)
+-------------------------------------------
+Si tu utilises un gestionnaire comme 1Password, LastPass ou Bitwarden,
+réinstalle simplement son extension : tes mots de passe y sont déjà.
+
+Pour les mots de passe enregistrés dans Arc, profil par profil :
+  a. Dans Arc, ouvre l'espace concerné, tape arc://password-manager dans la
+     barre d'adresse, puis Paramètres › Exporter les mots de passe.
+     Enregistre le fichier .csv.
+  b. Dans Chrome, dans le bon profil, ouvre chrome://password-manager/settings
+     › Importer des mots de passe › choisis le fichier .csv.
+  c. Supprime le fichier .csv et vide la corbeille : il contient tes mots de
+     passe en clair.
+
+
+À SAVOIR
+--------
+  • Les sessions ouvertes ne se transfèrent pas : il faudra te reconnecter
+    aux sites (Gmail, Notion, HubSpot…).
+  • Tout est consigné dans le dossier « resultat-migration » :
+      - resume.txt : ce qui a été fait ;
+      - favoris-html : un fichier de favoris par espace (copie de secours) ;
+      - sauvegardes-chrome : les fichiers Chrome d'origine.
+  • Options avancées (à ajouter à la fin de la commande, ex. ... .sh --remplacer) :
+      --mode espaces | --mode unique   choisir l'organisation sans menu
+      --profil "Nom du profil"         profil Chrome qui reçoit tout (mode unique)
+      --remplacer                      vider l'historique et les favoris des profils
+                                       Chrome ciblés avant d'y mettre le contenu d'Arc
+      --forcer                         refaire une migration déjà faite
+      --aide                           liste complète
+  • --remplacer et synchronisation : si la synchronisation Chrome est activée,
+    efface d'abord les données du compte (chrome.google.com/sync › Supprimer
+    les données) ou désactive la synchronisation, sinon Chrome peut faire
+    revenir l'ancien contenu depuis ton compte Google.
+  • Une fois satisfait, supprime le dossier « resultat-migration » : il contient
+    une copie de ton historique et de tes favoris.
+
+LIMITES
+-------
+  • Mac uniquement (pas Arc pour Windows).
+  • Ne sont pas repris : les sessions ouvertes (cookies), les mots de passe
+    (étape 6), les notes et Easels Arc, les Boosts, les extensions installées
+    hors Chrome Web Store.
+  • L'historique est rangé par profil Arc : si plusieurs espaces partagent le même
+    profil Arc, chaque profil Chrome correspondant reçoit tout cet historique.
+  • Les favoris (icônes du haut) sont ceux de ce Mac. Sur un Mac qui n'a jamais
+    ouvert Arc, ils peuvent manquer : les onglets épinglés, eux, sont toujours repris.
+
+
+EN CAS DE PROBLÈME
+------------------
+« macOS empêche Terminal de lire… » ou « Operation not permitted »
+  → Refais l'étape 3, puis quitte et rouvre Terminal.
+  → Si ça bloque toujours (outil de sécurité de l'entreprise), importe les
+    favoris à la main : dans chaque profil Chrome, ouvre
+    chrome://settings/importData › « Fichier HTML de favoris » › choisis le
+    fichier de l'espace dans resultat-migration/favoris-html.
+    L'historique ne pourra pas être transféré dans ce cas.
+
+« Arc est ouvert » / « Chrome est ouvert »
+  → Quitte l'application avec Cmd+Q (pas seulement la fenêtre) et relance.
+
+« Python 3 manquant »
+  → Dans Terminal : xcode-select --install, accepte l'installation, puis relance.
+
+« aucun profil Chrome de ce nom »
+  → Renomme le profil Chrome pour qu'il porte exactement le nom de l'espace,
+    ou indique la correspondance dans correspondance.txt, puis relance.
+
+« profil Chrome jamais ouvert »
+  → Ouvre ce profil une fois dans Chrome, quitte Chrome (Cmd+Q) et relance.
+
+Revenir en arrière
+  → Chrome fermé, recopie les fichiers de
+    resultat-migration/sauvegardes-chrome/<date>/<profil>/
+    dans ~/Library/Application Support/Google/Chrome/<profil>/

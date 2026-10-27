@@ -1,0 +1,4 @@
+# Fins de ligne Unix partout (indispensable pour le script bash)
+* text=auto eol=lf
+*.sh text eol=lf
+*.zip binary

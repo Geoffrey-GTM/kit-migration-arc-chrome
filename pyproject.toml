@@ -1,0 +1,18 @@
+[project]
+name = "kit-migration-arc-chrome"
+version = "1.0.0"
+description = "Migrer d'Arc vers Google Chrome sur Mac : favoris, onglets épinglés, historique et extensions."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["UP031"]  # formatage « % » conservé volontairement
+
+[tool.ruff.lint.isort]
+known-first-party = ["migrer_arc_chrome", "fixtures"]
