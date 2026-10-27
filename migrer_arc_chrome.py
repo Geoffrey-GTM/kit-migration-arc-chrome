@@ -2,7 +2,10 @@
 
 Reprend, pour chaque espace Arc : favoris, onglets épinglés (avec leurs dossiers),
 onglets ouverts, historique de navigation et liste des extensions.
+En mode « un profil par espace », tout arrive à plat dans la barre de favoris.
 Arc n'est jamais modifié ; les fichiers Chrome sont sauvegardés avant écriture.
+Les favoris enregistrés dans le compte Google du profil (AccountBookmarks) ne sont
+jamais modifiés : le script les signale, car Chrome les affiche en plus.
 
 Lancé par migrer-arc-vers-chrome.sh (qui vérifie qu'Arc et Chrome sont fermés).
 Bibliothèque standard uniquement, compatible Python 3.9+.
@@ -23,7 +26,7 @@ import tempfile
 import time
 import uuid
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 USAGE = """Usage : bash migrer-arc-vers-chrome.sh [options]
 
@@ -33,7 +36,11 @@ Options :
   --profil "Nom"       profil Chrome cible en mode unique
   --remplacer          vider l'historique et les favoris des profils Chrome ciblés
                        avant d'y mettre le contenu d'Arc (sauvegarde faite avant)
+  --dossiers           ranger les onglets épinglés et ouverts dans deux dossiers
+                       « Arc – onglets épinglés / ouverts » au lieu de les mettre à plat
   --forcer             refaire une migration déjà faite
+  --diagnostic         montrer, sans rien modifier, d'où viennent les favoris de chaque
+                       profil Chrome (ce Mac ou compte Google)
   --oui                répondre oui à toutes les questions
   --version            afficher la version
   --aide               afficher cette aide
@@ -61,6 +68,8 @@ def arg(name):
 FORCE = "--forcer" in ARGS
 REPLACE = "--remplacer" in ARGS
 YES = "--oui" in ARGS or os.environ.get("AUTO_YES") == "1"
+DOSSIERS = "--dossiers" in ARGS
+DIAGNOSTIC = "--diagnostic" in ARGS
 NO_OPEN = os.environ.get("NO_OPEN") == "1"
 MODE = arg("--mode") or os.environ.get("MODE")  # espaces | unique
 TARGET = arg("--profil") or os.environ.get("PROFIL")  # profil Chrome cible (mode unique)
@@ -89,10 +98,10 @@ def head(m):
     LOG.append("\n" + m)
 
 
-def save_log():
+def save_log(name="resume.txt", title="Migration"):
     os.makedirs(OUT, exist_ok=True)
-    with open(os.path.join(OUT, "resume.txt"), "w", encoding="utf-8") as f:
-        f.write("Migration du %s\n%s\n" % (datetime.datetime.now().strftime("%d/%m/%Y %H:%M"), "\n".join(LOG)))
+    with open(os.path.join(OUT, name), "w", encoding="utf-8") as f:
+        f.write("%s du %s\n%s\n" % (title, datetime.datetime.now().strftime("%d/%m/%Y %H:%M"), "\n".join(LOG)))
 
 
 def ask(prompt, default=""):
@@ -164,6 +173,13 @@ def count(nodes):
 
 def folder(name, children):
     return [{"type": "folder", "name": name, "children": children}] if children else []
+
+
+def space_nodes(p):
+    """Contenu d'un espace : à plat (par défaut) ou rangé dans deux dossiers (--dossiers)."""
+    if DOSSIERS:
+        return list(p["favs"]) + folder(PINNED_FOLDER, p["pinned"]) + folder(OPEN_FOLDER, p["unpinned"])
+    return list(p["favs"]) + list(p["pinned"]) + list(p["unpinned"])
 
 
 # ------------------------------------------------------------------ Arc
@@ -320,7 +336,7 @@ def html_export(p):
                 emit(n["children"], ind + "    ")
                 L.append(ind + "</DL><p>")
 
-    tree = list(p["favs"]) + folder(PINNED_FOLDER, p["pinned"]) + folder(OPEN_FOLDER, p["unpinned"])
+    tree = space_nodes(p)
     emit(folder("Arc – " + p["title"], tree), "    ")
     L.append("</DL><p>")
     os.makedirs(os.path.join(OUT, "favoris-html"), exist_ok=True)
@@ -426,11 +442,69 @@ def build(nodes, counter):
     return res
 
 
+def backup_bookmarks(cdir):
+    """Sauvegarde le fichier Bookmarks et ses éventuelles copies chiffrées (EncryptedBookmarks*)."""
+    backup(cdir, "Bookmarks")
+    pdir = os.path.join(CHROME, cdir)
+    for name in sorted(os.listdir(pdir)):
+        if name.startswith("EncryptedBookmarks") and os.path.isfile(os.path.join(pdir, name)):
+            backup(cdir, name)
+
+
+def roots_summary(path):
+    """Pour un fichier de favoris Chrome : {racine: (nombre de liens, [dossiers du premier niveau])}."""
+    res = {}
+    roots = (read_json(path).get("roots") or {}) if os.path.exists(path) else {}
+    for key in ("bookmark_bar", "other", "synced"):
+        r = roots.get(key)
+        if isinstance(r, dict):
+            kids = r.get("children", []) or []
+            res[key] = (
+                sum(1 for c in kids for _ in walk_urls(c)),
+                [c.get("name") or "?" for c in kids if c.get("type") == "folder"],
+            )
+    return res
+
+
+def account_bookmarks(cdir):
+    """Favoris enregistrés dans le compte Google du profil (AccountBookmarks) : (liens, dossiers).
+    Ils sont stockés chez Google : effacés du Mac, Chrome les retéléchargerait. Le script n'y touche pas."""
+    try:
+        summary = roots_summary(os.path.join(CHROME, cdir, "AccountBookmarks"))
+    except Exception:
+        return 0, []
+    return sum(n for n, _f in summary.values()), [f for _n, fs in summary.values() for f in fs]
+
+
+def account_warning(profs, cdirs):
+    """Signale les profils qui affichent aussi des favoris de leur compte Google. Renvoie leurs noms."""
+    hits = []
+    for cd in cdirs:
+        n, folders = account_bookmarks(cd)
+        if n:
+            hits.append((cd, n, folders))
+    if not hits:
+        return []
+    head("Favoris de ton compte Google (non touchés)")
+    for cd, n, folders in hits:
+        extra = ""
+        if folders:
+            extra = " — dossiers : " + ", ".join(folders[:8]) + ("…" if len(folders) > 8 else "")
+        warn("%s : %d favoris enregistrés dans le compte Google%s" % (profs[cd], n, extra))
+    out("    Ils ne viennent pas d'Arc, et Chrome les affiche en plus dans la barre. Le script n'y touche pas :")
+    out("    effacés du Mac, ils seraient retéléchargés depuis Google. Pour ne garder que le contenu d'Arc,")
+    out("    dans chacun de ces profils :")
+    out("    • les masquer sans les perdre : Paramètres › Vous et Google › Synchronisation › décocher « Favoris » ;")
+    out("    • ou les supprimer pour de bon : gestionnaire de favoris (Cmd+Option+B) › section")
+    out("      « Dans votre compte Google » › tout sélectionner › Supprimer (irréversible, sur tous tes appareils).")
+    return [profs[cd] for cd, _n, _f in hits]
+
+
 def write_bookmarks(cdir, nodes):
     path = os.path.join(CHROME, cdir, "Bookmarks")
     if os.path.exists(path):
         data = read_json(path)
-        backup(cdir, "Bookmarks")
+        backup_bookmarks(cdir)
     else:
         data = empty_bookmarks()
     bar = data["roots"]["bookmark_bar"]
@@ -447,7 +521,7 @@ def clear_bookmarks(cdir):
     if not os.path.exists(path):
         return 0
     data = read_json(path)
-    backup(cdir, "Bookmarks")
+    backup_bookmarks(cdir)
     removed = 0
     for root in data["roots"].values():
         if isinstance(root, dict):
@@ -465,18 +539,6 @@ def walk_urls(node):
         yield node
     for c in node.get("children", []) or []:
         yield from walk_urls(c)
-
-
-def account_bookmarks(cdir):
-    """Nombre de favoris enregistrés dans le compte Google (fichier AccountBookmarks des Chrome récents).
-    Ils sont stockés chez Google : seul Chrome peut les supprimer (sinon il les retélécharge)."""
-    path = os.path.join(CHROME, cdir, "AccountBookmarks")
-    try:
-        data = read_json(path)
-    except Exception:
-        return 0
-    roots = [r for r in (data.get("roots") or {}).values() if isinstance(r, dict)]
-    return sum(1 for r in roots for n in r.get("children", []) for _ in walk_urls(n))
 
 
 STATEMENTS = [
@@ -574,7 +636,7 @@ def clear_history(cdir):
     """Mode --remplacer : vide toutes les tables de l'historique Chrome (sauf « meta »), après sauvegarde."""
     dst = os.path.join(CHROME, cdir, "History")
     if not os.path.exists(dst):
-        return "ok:aucun historique"
+        return "ok:déjà vide"
     bak = backup(cdir, "History")
     con = sqlite3.connect(dst, isolation_level=None)
     try:
@@ -615,8 +677,67 @@ def installed(cdir):
     return set(os.listdir(d)) if os.path.isdir(d) else set()
 
 
+# ------------------------------------------------------------------ diagnostic
+def diagnostic():
+    """Lecture seule : pour chaque profil Chrome, favoris enregistrés sur ce Mac et dans le compte Google."""
+    head("Diagnostic des favoris Chrome (lecture seule, rien n'est modifié)")
+    try:
+        profs = chrome_profiles()
+    except PermissionError:
+        fda_help(CHROME)
+        return
+    except FileNotFoundError:
+        out("  ✗ Chrome introuvable sur ce Mac (%s)." % CHROME)
+        return
+    labels = (("bookmark_bar", "barre"), ("other", "autres favoris"), ("synced", "favoris sur mobile"))
+    concerned = []
+    for cd, name in sorted(profs.items(), key=lambda x: x[1].casefold()):
+        try:
+            signed = bool(read_json(os.path.join(CHROME, cd, "Preferences")).get("account_info"))
+        except Exception:
+            signed = False
+        out("\n  %s (%s) — connecté à un compte Google : %s" % (name, cd, "oui" if signed else "non"))
+        for fn, where in (("Bookmarks", "sur ce Mac"), ("AccountBookmarks", "compte Google")):
+            try:
+                summary = roots_summary(os.path.join(CHROME, cd, fn))
+            except Exception as e:
+                out("    %-14s illisible (%s)" % (where, e))
+                continue
+            if not sum(n for n, _f in summary.values()):
+                out("    %-14s aucun favori" % where)
+                continue
+            if fn == "AccountBookmarks":
+                concerned.append(name)
+            for key, lab in labels:
+                n, folders = summary.get(key, (0, []))
+                if n:
+                    out("    %-14s %-18s %4d liens · dossiers : %s" % (where, lab, n, ", ".join(folders) or "—"))
+    head("Lecture")
+    out("  • « sur ce Mac » : ce que le script écrit (contenu d'Arc après une migration).")
+    out("  • « compte Google » : favoris synchronisés avec ton compte. Le script n'y touche pas.")
+    if concerned:
+        out("\n  ⚠ Favoris du compte Google affichés en plus dans : %s." % ", ".join(concerned))
+        out("    Pour ne garder que le contenu d'Arc : Paramètres › Vous et Google › Synchronisation ›")
+        out("    décocher « Favoris » (sans rien perdre), ou les supprimer dans le gestionnaire de favoris")
+        out("    (Cmd+Option+B) › section « Dans votre compte Google ».")
+    else:
+        out("\n  ✓ Aucun favori du compte Google : la barre n'affiche que ce qui est enregistré sur ce Mac.")
+
+
 # ------------------------------------------------------------------ programme
-KNOWN_FLAGS = {"--forcer", "--remplacer", "--oui", "--mode", "--profil", "--version", "--aide", "-h", "--help"}
+KNOWN_FLAGS = {
+    "--forcer",
+    "--remplacer",
+    "--dossiers",
+    "--diagnostic",
+    "--oui",
+    "--mode",
+    "--profil",
+    "--version",
+    "--aide",
+    "-h",
+    "--help",
+}
 
 
 def check_args():
@@ -770,6 +891,7 @@ def main():
     by_profile = {}
     for p in todo:
         by_profile.setdefault(p["cdir"], []).append(p)
+    in_account = account_warning(profs, list(by_profile))
     if REPLACE:
         out("\n  ⚠ Mode --remplacer : l'historique et les favoris actuels de ces profils Chrome seront effacés")
         out("    avant d'y mettre le contenu d'Arc : %s." % ", ".join(profs[cd] for cd in by_profile))
@@ -793,18 +915,9 @@ def main():
             (ok if r.startswith("ok:") else warn)(
                 "%s : historique %s" % (profs[cd], r[3:] if r.startswith("ok:") else r)
             )
-            n_account = account_bookmarks(cd)
-            if n_account:
-                warn(
-                    "%s : %d favoris sont enregistrés dans ton compte Google et resteront visibles. "
-                    "Supprime-les dans Chrome (chrome://bookmarks) : ils disparaîtront aussi du compte."
-                    % (profs[cd], n_account)
-                )
             for k in [k for k in state if k.split("|")[-1] == cd or k.split("|")[1:2] == [cd]]:
                 del state[k]
         save_state(state)
-        out("  Si la synchronisation Chrome est activée sur ces profils, efface aussi les données du compte Google")
-        out("  (chrome.google.com/sync › Supprimer les données) : sinon Chrome peut faire revenir l'ancien contenu.")
 
     head("Favoris")
     for cd, ps in by_profile.items():
@@ -813,7 +926,7 @@ def main():
             p = ps[0]
             key = "favoris|%s|%s" % (cd, p["title"])
             if not state.get(key) or force:
-                nodes = list(p["favs"]) + folder(PINNED_FOLDER, p["pinned"]) + folder(OPEN_FOLDER, p["unpinned"])
+                nodes = space_nodes(p)
                 keys.append(key)
         else:
             fkey = "favoris|%s|__favoris__" % cd
@@ -893,6 +1006,9 @@ def main():
         out("  Clique sur « Ajouter à Chrome » dans chaque onglet.")
     head("Terminé ✅")
     out("  • Dans Chrome, affiche la barre de favoris avec Cmd+Maj+B.")
+    if in_account:
+        out("  • Favoris du compte Google encore affichés dans : %s (voir plus haut)." % ", ".join(in_account))
+    out("  • Pour vérifier d'où vient chaque favori : bash diagnostic-favoris.sh")
     out("  • Mots de passe : suis l'étape 6 du LISEZMOI.txt.")
     out("  • Résumé, favoris HTML et sauvegardes : dossier resultat-migration.")
     save_log()
@@ -902,6 +1018,10 @@ if __name__ == "__main__":
     code = check_args()
     if code is not None:
         sys.exit(code)
+    if DIAGNOSTIC:
+        diagnostic()
+        save_log("diagnostic.txt", "Diagnostic")
+        sys.exit(0)
     try:
         main()
     except KeyboardInterrupt:
