@@ -36,6 +36,7 @@ Options :
   --profil "Nom"       profil Chrome cible en mode unique
   --remplacer          vider l'historique et les favoris des profils Chrome ciblés
                        avant d'y mettre le contenu d'Arc (sauvegarde faite avant)
+  --plan               simulation : affiche ce que le script ferait, sans rien modifier dans Chrome
   --dossiers           ranger les onglets épinglés et ouverts dans deux dossiers
                        « Arc – onglets épinglés / ouverts » au lieu de les mettre à plat
   --forcer             refaire une migration déjà faite
@@ -69,6 +70,7 @@ FORCE = "--forcer" in ARGS
 REPLACE = "--remplacer" in ARGS
 YES = "--oui" in ARGS or os.environ.get("AUTO_YES") == "1"
 DOSSIERS = "--dossiers" in ARGS
+PLAN = "--plan" in ARGS
 DIAGNOSTIC = "--diagnostic" in ARGS
 NO_OPEN = os.environ.get("NO_OPEN") == "1"
 MODE = arg("--mode") or os.environ.get("MODE")  # espaces | unique
@@ -113,8 +115,19 @@ def ask(prompt, default=""):
         return default
 
 
+def interactive():
+    """Vrai si une personne peut répondre au clavier (le script tourne dans un terminal)."""
+    try:
+        return sys.stdin.isatty()
+    except (AttributeError, ValueError):
+        return False
+
+
 def confirm(prompt):
-    return ask(prompt + " (o/n) ", "o").lower() in ("o", "oui", "y", "yes")
+    # Sans terminal (lancé par un autre programme, un assistant par exemple), pas de « oui » implicite :
+    # il faut --oui pour confirmer.
+    default = "o" if YES or interactive() else "n"
+    return ask(prompt + " (o/n) ", default).lower() in ("o", "oui", "y", "yes")
 
 
 def now_str():
@@ -353,11 +366,17 @@ def chrome_profiles():
 
 
 def load_overrides():
-    res, p = {}, os.path.join(KIT, "correspondance.txt")
-    if os.path.exists(p):
+    """Règles de correspondance.txt, puis de correspondance.local.txt (fichier personnel, jamais versionné),
+    qui l'emportent. Une règle par ligne ; ce qui suit « # » est un commentaire."""
+    res = {}
+    for name in ("correspondance.txt", "correspondance.local.txt"):
+        p = os.path.join(KIT, name)
+        if not os.path.exists(p):
+            continue
         with open(p, encoding="utf-8-sig") as f:
-            for line in f:
-                if "=" in line and not line.strip().startswith("#"):
+            for raw in f:
+                line = re.sub(r"(^|\s)#.*$", "", raw).strip()
+                if "=" in line:
                     a, b = line.split("=", 1)
                     res[norm(a)] = b.strip()
     return res
@@ -730,6 +749,7 @@ KNOWN_FLAGS = {
     "--remplacer",
     "--dossiers",
     "--diagnostic",
+    "--plan",
     "--oui",
     "--mode",
     "--profil",
@@ -791,7 +811,7 @@ def main():
     for s in spaces:
         t = s["title"]
         if overrides.get(norm(t), "").casefold() in ("-", "ignorer"):
-            out("  • %-24s ignoré (correspondance.txt)" % t)
+            out("  • %-24s ignoré (fichier de correspondance)" % t)
             continue
         aprof = prof_of(s.get("profile"))[0] or "Default"
         c = space_containers(s)
@@ -896,8 +916,15 @@ def main():
         out("\n  ⚠ Mode --remplacer : l'historique et les favoris actuels de ces profils Chrome seront effacés")
         out("    avant d'y mettre le contenu d'Arc : %s." % ", ".join(profs[cd] for cd in by_profile))
         out("    Une sauvegarde est faite avant (resultat-migration/sauvegardes-chrome).")
+    if PLAN:
+        head("Simulation terminée")
+        out("  Rien n'a été modifié dans Chrome. Relance sans --plan pour faire la migration.")
+        save_log("plan.txt", "Simulation")
+        return
     if not confirm("\nOn lance la migration ?"):
         out("Rien n'a été modifié.")
+        if not YES and not interactive():
+            out("  (Lancé sans terminal : ajoute --oui pour confirmer la migration.)")
         save_log()
         return
 

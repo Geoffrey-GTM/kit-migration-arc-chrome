@@ -66,7 +66,7 @@ class MigrationTest(unittest.TestCase):
 
     def test_espace_ignore(self):
         out = self.run_ok("--mode", "espaces")
-        self.assertIn("ignoré (correspondance.txt)", out)
+        self.assertIn("ignoré (fichier de correspondance)", out)
         self.assertNotIn("Vieux site", str(fixtures.read_bookmarks(self.root, "Profile 5")))
 
     def test_un_seul_profil(self):
@@ -78,6 +78,37 @@ class MigrationTest(unittest.TestCase):
         self.run_ok("--mode", "espaces")
         html_dir = os.path.join(self.root, "kit", "resultat-migration", "favoris-html")
         self.assertEqual(sorted(os.listdir(html_dir)), ["Clients.html", "Perso.html"])
+
+    def test_correspondance_locale(self):
+        with open(os.path.join(self.root, "kit", "correspondance.local.txt"), "w", encoding="utf-8") as f:
+            f.write("Perso = ignorer  # espace perso, pas dans Chrome\n")
+        out = self.run_ok("--mode", "espaces")
+        self.assertIn("Perso", out)
+        self.assertEqual([n for _t, n in fixtures.bar(self.root, "Profile 6")], ["Ancien dossier Chrome"])
+        self.assertIn("Messagerie", [n for _t, n in fixtures.bar(self.root, "Profile 5")])
+
+    # --------------------------------------------------------------- simulation et confirmation
+    def chrome_digests(self):
+        names = ("Bookmarks", "History")
+        return {
+            (p, n): digest(os.path.join(self.root, "chrome", p, n)) for p in ("Profile 5", "Profile 6") for n in names
+        }
+
+    def test_plan_ne_modifie_rien(self):
+        before = self.chrome_digests()
+        out = self.run_ok("--plan", "--mode", "espaces", "--remplacer")
+        self.assertEqual(self.chrome_digests(), before)
+        self.assertIn("Simulation terminée", out)
+        self.assertIn("Clients                  → Clients", out)
+        self.assertTrue(os.path.exists(os.path.join(self.root, "kit", "resultat-migration", "plan.txt")))
+
+    def test_sans_terminal_ni_oui_rien_n_est_modifie(self):
+        before = self.chrome_digests()
+        r = fixtures.run(self.root, "--mode", "espaces", "--remplacer", yes=False)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(self.chrome_digests(), before)
+        self.assertIn("Rien n'a été modifié", r.stdout)
+        self.assertIn("ajoute --oui", r.stdout)
 
     # --------------------------------------------------------------- remplacer et compte Google
     def test_remplacer_vide_puis_importe(self):

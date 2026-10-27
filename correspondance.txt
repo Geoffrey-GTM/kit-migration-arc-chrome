@@ -9,7 +9,11 @@
 #   - ne pas migrer un espace du tout (valable dans les deux modes) :
 #         Nom de l'espace Arc = ignorer
 #
-# Une règle par ligne. Les lignes qui commencent par # ne sont pas lues.
+# Une règle par ligne. Tout ce qui suit un # est un commentaire.
+#
+# Tu as cloné le dépôt avec Git ? Mets plutôt tes règles dans un fichier
+# « correspondance.local.txt », à côté de celui-ci : il n'est jamais versionné,
+# et ses règles l'emportent sur celles de ce fichier.
 # Exemples (retire le # devant pour les activer) :
 #
 # Clients = Travail

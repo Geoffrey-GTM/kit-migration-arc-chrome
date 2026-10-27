@@ -162,22 +162,33 @@ def build(root):
     write_json(os.path.join(chrome, "Profile 6", "AccountBookmarks"), bookmarks([ACCOUNT_FOLDER]))
 
     with open(os.path.join(kit, "correspondance.txt"), "w", encoding="utf-8") as f:
-        f.write("# test\nAncien = ignorer\n")
+        f.write("# test\nAncien = ignorer   # commentaire en fin de ligne\n")
     return {"arc": arc, "chrome": chrome, "kit": kit}
 
 
-def run(root, *args):
-    """Lance le script sur les données factices, en répondant oui à tout et sans ouvrir Chrome."""
+def run(root, *args, yes=True):
+    """Lance le script sur les données factices, sans ouvrir Chrome.
+
+    Avec yes=True, répond oui à tout ; sinon, le script tourne sans terminal ni réponse possible,
+    comme lorsqu'un assistant le lance sans --oui."""
     env = dict(os.environ)
+    env.pop("AUTO_YES", None)
     env.update(
         ARC_DIR=os.path.join(root, "arc"),
         CHROME_DIR=os.path.join(root, "chrome"),
         KIT_DIR=os.path.join(root, "kit"),
-        AUTO_YES="1",
         NO_OPEN="1",
     )
+    if yes:
+        env["AUTO_YES"] = "1"
     return subprocess.run(
-        [sys.executable, "-B", SCRIPT, *args], env=env, capture_output=True, text=True, encoding="utf-8", timeout=60
+        [sys.executable, "-B", SCRIPT, *args],
+        env=env,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=60,
     )
 
 

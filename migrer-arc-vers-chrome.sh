@@ -4,7 +4,7 @@
 #  Lanceur : vérifie l'environnement puis exécute migrer_arc_chrome.py.
 #
 #  Usage   : bash migrer-arc-vers-chrome.sh [--mode espaces|unique] [--profil "Nom"] [--remplacer] [--dossiers] [--forcer]
-#            bash migrer-arc-vers-chrome.sh --diagnostic   (lecture seule)
+#            bash migrer-arc-vers-chrome.sh --diagnostic | --plan   (lecture seule)
 #  Aide    : bash migrer-arc-vers-chrome.sh --aide
 #  Mode d'emploi complet : LISEZMOI.txt
 # ==================================================================
@@ -22,7 +22,7 @@ if [ ! -f "$PY_SCRIPT" ]; then
 fi
 
 case " $* " in
-  *" --aide "*|*" --help "*|*" -h "*|*" --version "*|*" --diagnostic "*) ;;  # lecture seule : navigateurs ouverts acceptés
+  *" --aide "*|*" --help "*|*" -h "*|*" --version "*|*" --diagnostic "*|*" --plan "*) ;;  # lecture seule : navigateurs ouverts acceptés
   *)
     if pgrep -x "Arc" >/dev/null 2>&1; then
       echo "✗ Arc est ouvert : quitte-le (Cmd+Q) puis relance."

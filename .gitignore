@@ -1,6 +1,9 @@
 # Résultats d'une migration : contiennent une copie de l'historique et des favoris
 resultat-migration/
 
+# Règles de correspondance personnelles (noms d'espaces et de profils)
+correspondance.local.txt
+
 # Archive de release construite localement
 dist/
 
