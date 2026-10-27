@@ -1,6 +1,6 @@
 [project]
 name = "kit-migration-arc-chrome"
-version = "1.0.0"
+version = "1.1.0"
 description = "Migrer d'Arc vers Google Chrome sur Mac : favoris, onglets épinglés, historique et extensions."
 readme = "README.md"
 license = { text = "MIT" }

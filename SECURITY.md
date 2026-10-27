@@ -27,7 +27,8 @@ Le script manipule des données de navigation sensibles. Sont notamment concern�
 
 - toute lecture ou écriture en dehors des fichiers prévus :
   - côté Arc : `StorableSidebar.json`, `History`, les manifestes d'extensions ;
-  - côté Chrome : `Bookmarks`, `History`, les caches listés dans `HISTORY_CACHES` ;
+  - côté Chrome, en écriture : `Bookmarks`, `History`, les caches listés dans `HISTORY_CACHES` ;
+  - côté Chrome, en lecture seule : `Local State`, `Preferences`, `AccountBookmarks` (copiés : `EncryptedBookmarks*`, dans les sauvegardes) ;
 - toute fuite de données hors de la machine (le script ne doit établir aucune connexion réseau) ;
 - toute perte de données Chrome sans sauvegarde préalable ;
 - toute exécution de code arbitraire à partir du contenu des fichiers Arc (titres, adresses, noms d'espaces).

@@ -20,8 +20,7 @@ Télécharge la dernière version (Kit-migration-Arc-Chrome-vX.Y.Z.zip) :
     https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/latest
 Double-clique sur le fichier .zip dans ton dossier Téléchargements.
 Tu obtiens un dossier « Kit-migration-Arc-Chrome ». Laisse-le dans Téléchargements,
-et garde ensemble les deux fichiers du script (migrer-arc-vers-chrome.sh et
-migrer_arc_chrome.py).
+et garde ensemble tous ses fichiers.
 
 
 2. CHOISIR SON ORGANISATION DANS CHROME
@@ -29,6 +28,12 @@ migrer_arc_chrome.py).
 Le script te proposera deux options :
 
   Option 1 — Un profil Chrome par espace Arc (ex. un profil par client)
+    Les favoris, les onglets épinglés et les onglets ouverts de l'espace
+    arrivent directement dans la barre de favoris du profil, sans dossier
+    supplémentaire. Les dossiers que tu avais créés dans Arc sont conservés.
+    (Option --dossiers : range plutôt les onglets dans deux dossiers
+    « Arc – onglets épinglés » et « Arc – onglets ouverts ».)
+
     Crée dans Chrome un profil pour chaque espace, avec EXACTEMENT le même nom
     que l'espace Arc (les majuscules n'ont pas d'importance) :
     icône de profil en haut à droite de Chrome › Ajouter › (connexion Google
@@ -57,7 +62,8 @@ Tu pourras retirer cette autorisation une fois la migration terminée.
 
 4. QUITTER ARC ET CHROME
 ------------------------
-Cmd+Q sur chacun des deux (fermer la fenêtre ne suffit pas).
+Cmd+Q sur chacun des deux (fermer la fenêtre ne suffit pas : Chrome réécrirait
+ses favoris en se fermant et annulerait l'import).
 
 
 5. LANCER LA MIGRATION
@@ -73,11 +79,20 @@ fichier migrer-arc-vers-chrome.sh dans la fenêtre de Terminal, puis Entrée.)
 Le script :
   • liste tes espaces Arc et tes profils Chrome ;
   • te demande l'organisation (1 ou 2) ;
+  • signale les profils qui affichent aussi des favoris de ton compte Google
+    (voir « Des favoris qui ne viennent pas d'Arc ») ;
   • affiche ce qu'il va faire et attend ta confirmation (tape o puis Entrée) ;
   • propose ensuite d'ouvrir Chrome sur les extensions à réinstaller :
     clique sur « Ajouter à Chrome » dans chaque onglet.
 
 Dans Chrome, affiche la barre de favoris avec Cmd+Maj+B.
+
+Repartir de zéro (option 1) : pour vider d'abord les favoris et l'historique
+de chaque profil Chrome lié à un espace, puis n'y mettre que le contenu d'Arc :
+
+    bash ~/Downloads/Kit-migration-Arc-Chrome/remplacer-tous-les-espaces.sh
+
+Une sauvegarde est faite avant d'effacer quoi que ce soit.
 
 
 6. TRANSFÉRER LES MOTS DE PASSE (à la main)
@@ -95,12 +110,42 @@ Pour les mots de passe enregistrés dans Arc, profil par profil :
      passe en clair.
 
 
+7. VÉRIFIER
+-----------
+Pour voir, profil par profil, d'où viennent les favoris affichés (Arc et
+Chrome peuvent rester ouverts, rien n'est modifié) :
+
+    bash ~/Downloads/Kit-migration-Arc-Chrome/diagnostic-favoris.sh
+
+  • « sur ce Mac » : ce que le script a écrit (le contenu d'Arc) ;
+  • « compte Google » : des favoris synchronisés avec ton compte, que Chrome
+    affiche en plus. Voir la section suivante.
+
+
+DES FAVORIS QUI NE VIENNENT PAS D'ARC
+-------------------------------------
+Si un profil Chrome est connecté à un compte Google, Chrome affiche en plus
+les favoris enregistrés dans ce compte. Le script n'y touche jamais : effacés
+du Mac, ils seraient retéléchargés depuis Google, même avec
+remplacer-tous-les-espaces.sh.
+
+Pour ne garder que le contenu d'Arc, dans chaque profil concerné :
+  • les masquer sans les perdre : Paramètres › Vous et Google ›
+    Synchronisation › décocher « Favoris » ;
+  • ou les supprimer pour de bon : gestionnaire de favoris (Cmd+Option+B) ›
+    section « Dans votre compte Google » › tout sélectionner › Supprimer.
+    C'est irréversible et vaut pour tous tes appareils.
+N'utilise pas « Supprimer les données » du tableau de bord de synchronisation
+Google : cela efface aussi tes mots de passe et tout le reste du compte.
+
+
 À SAVOIR
 --------
   • Les sessions ouvertes ne se transfèrent pas : il faudra te reconnecter
     aux sites (Gmail, Notion, HubSpot…).
   • Tout est consigné dans le dossier « resultat-migration » :
       - resume.txt : ce qui a été fait ;
+      - diagnostic.txt : le dernier diagnostic ;
       - favoris-html : un fichier de favoris par espace (copie de secours) ;
       - sauvegardes-chrome : les fichiers Chrome d'origine.
   • Options avancées (à ajouter à la fin de la commande, ex. ... .sh --remplacer) :
@@ -108,12 +153,11 @@ Pour les mots de passe enregistrés dans Arc, profil par profil :
       --profil "Nom du profil"         profil Chrome qui reçoit tout (mode unique)
       --remplacer                      vider l'historique et les favoris des profils
                                        Chrome ciblés avant d'y mettre le contenu d'Arc
+      --dossiers                       ranger les onglets dans deux dossiers
+                                       au lieu de les mettre à plat
       --forcer                         refaire une migration déjà faite
+      --diagnostic                     diagnostic des favoris (lecture seule)
       --aide                           liste complète
-  • --remplacer et synchronisation : si la synchronisation Chrome est activée,
-    efface d'abord les données du compte (chrome.google.com/sync › Supprimer
-    les données) ou désactive la synchronisation, sinon Chrome peut faire
-    revenir l'ancien contenu depuis ton compte Google.
   • Une fois satisfait, supprime le dossier « resultat-migration » : il contient
     une copie de ton historique et de tes favoris.
 
@@ -151,6 +195,14 @@ EN CAS DE PROBLÈME
 
 « profil Chrome jamais ouvert »
   → Ouvre ce profil une fois dans Chrome, quitte Chrome (Cmd+Q) et relance.
+
+« déjà migrés (option --forcer pour refaire) »
+  → La migration de ce profil est déjà faite. Pour la refaire proprement :
+    bash ~/Downloads/Kit-migration-Arc-Chrome/remplacer-tous-les-espaces.sh
+
+Des dossiers Chrome restent dans la barre après la migration
+  → Ce sont des favoris de ton compte Google : lance le diagnostic (étape 7),
+    puis suis « Des favoris qui ne viennent pas d'Arc ».
 
 Revenir en arrière
   → Chrome fermé, recopie les fichiers de

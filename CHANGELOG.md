@@ -6,6 +6,29 @@ Il suit le format [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les 
 
 ## [Non publié]
 
+## [1.1.0] - 2026-10-27
+
+### Ajouté
+
+- **Favoris du compte Google :** le script repère les favoris enregistrés dans le compte Google d'un profil (fichier `AccountBookmarks`), que Chrome affiche en plus de ceux du Mac. Il les signale avant la migration et en fin de migration, avec la marche à suivre pour les masquer ou les supprimer. Il n'y touche jamais.
+- **Option `--diagnostic` et raccourci `diagnostic-favoris.sh` :** montrent, sans rien modifier, les favoris de chaque profil Chrome enregistrés sur ce Mac et dans le compte Google.
+- **Raccourci `remplacer-tous-les-espaces.sh` :** repart de zéro (`--mode espaces --remplacer`).
+- **Option `--dossiers` :** garde l'ancien rangement des onglets dans deux dossiers.
+- **Sauvegarde des copies chiffrées :** les fichiers `EncryptedBookmarks*` que crée Chrome sont copiés avec `Bookmarks` avant toute écriture.
+- **Tests de bout en bout** sur des données factices (`tests/`).
+
+### Modifié
+
+- En mode « un profil par espace », les onglets épinglés et ouverts arrivent **à plat dans la barre de favoris**, sans les dossiers « Arc – onglets épinglés » et « Arc – onglets ouverts ».
+
+### Retiré
+
+- Le conseil d'utiliser « Supprimer les données » sur chrome.google.com/sync avant `--remplacer` : ce bouton efface aussi les mots de passe et tout le reste du compte Google.
+
+### Corrigé
+
+- La documentation annonçait une intégration continue et des tests absents du dépôt. Les tests sont maintenant présents, et les commandes de vérification sont décrites dans le README.
+
 ## [1.0.0] - 2026-10-27
 
 ### Ajouté
@@ -20,5 +43,6 @@ Il suit le format [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les 
 - **Relance sans doublon :** le script garde la trace de ce qui a déjà été migré.
 - **Qualité :** tests automatisés sur Linux et macOS, et intégration continue (ShellCheck, Ruff).
 
-[Non publié]: https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/compare/v1.0.0...HEAD
+[Non publié]: https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/tag/v1.0.0

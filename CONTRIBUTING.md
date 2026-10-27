@@ -31,7 +31,7 @@ Les tests utilisent des données **factices**, créées par `tests/fixtures.py`.
 ### Règles du projet
 
 - **Aucune dépendance externe :** bibliothèque standard Python uniquement, compatible **Python 3.9**. C'est la version fournie par les outils de ligne de commande d'Apple.
-- **Lanceur compatible avec bash 3.2,** la version installée par défaut sur macOS. Vérifie-le avec `shellcheck migrer-arc-vers-chrome.sh scripts/*.sh`.
+- **Lanceur compatible avec bash 3.2,** la version installée par défaut sur macOS. Vérifie-le avec `shellcheck *.sh scripts/*.sh`.
 - **Style Python :** `ruff format .` puis `ruff check .`. La configuration est dans `pyproject.toml`.
 - **Messages en français,** tutoiement, phrases courtes. L'utilisateur final n'est pas forcément technique.
 - **Ne jamais écrire dans les fichiers d'Arc.**
@@ -47,12 +47,12 @@ Les tests utilisent des données **factices**, créées par `tests/fixtures.py`.
    - `fix:` pour un correctif ;
    - `docs:`, `test:`, `ci:` et `chore:` pour le reste.
 3. Ajoute une ligne dans la section « Non publié » du [CHANGELOG](CHANGELOG.md).
-4. Ouvre la pull request et remplis le modèle. La CI doit passer : ShellCheck, Ruff, puis les tests sur Linux et macOS.
+4. Avant d'ouvrir la pull request, vérifie que les tests, Ruff et ShellCheck passent (commandes de la section « Développement » du README).
 5. Si ta modification touche la lecture d'Arc ou l'écriture dans Chrome, teste-la aussi sur un vrai Mac et précise-le dans la PR.
 
 ## Publier une version (mainteneur)
 
 1. Mets à jour `__version__` dans `migrer_arc_chrome.py` et `version` dans `pyproject.toml`.
 2. Dans le CHANGELOG, transforme la section « Non publié » en `[X.Y.Z] - AAAA-MM-JJ`, puis mets à jour les liens en bas du fichier.
-3. Sur GitHub, ouvre **Releases › Draft a new release** et crée le tag `vX.Y.Z` en reprenant les notes du CHANGELOG.
-4. Clique sur **Publish release**. Le workflow `release.yml` vérifie que le tag correspond à la version, lance les tests, puis joint automatiquement `Kit-migration-Arc-Chrome-vX.Y.Z.zip` à la release.
+3. Lance les tests, puis `bash scripts/construire-archive.sh` : l'archive `dist/Kit-migration-Arc-Chrome-vX.Y.Z.zip` est créée.
+4. Sur GitHub, ouvre **Releases › Draft a new release**, crée le tag `vX.Y.Z`, reprends les notes du CHANGELOG, joins l'archive, puis clique sur **Publish release**.
