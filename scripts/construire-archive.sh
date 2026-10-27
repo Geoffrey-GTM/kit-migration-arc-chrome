@@ -12,7 +12,7 @@ trap 'rm -rf "$STAGE"' EXIT
 
 mkdir -p "$STAGE/$NAME" dist
 cp migrer-arc-vers-chrome.sh remplacer-tous-les-espaces.sh diagnostic-favoris.sh migrer_arc_chrome.py \
-  correspondance.txt LISEZMOI.txt README.md LICENSE "$STAGE/$NAME/"
+  correspondance.txt LISEZMOI.txt README.md CLAUDE.md LICENSE "$STAGE/$NAME/"
 chmod +x "$STAGE/$NAME/"*.sh
 rm -f "$ARCHIVE"
 (cd "$STAGE" && zip -rqX - "$NAME") > "$ARCHIVE"

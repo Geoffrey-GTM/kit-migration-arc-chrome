@@ -16,10 +16,14 @@ Il suit le format [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les 
 - **Option `--dossiers` :** garde l'ancien rangement des onglets dans deux dossiers.
 - **Sauvegarde des copies chiffrées :** les fichiers `EncryptedBookmarks*` que crée Chrome sont copiés avec `Bookmarks` avant toute écriture.
 - **Tests de bout en bout** sur des données factices (`tests/`).
+- **Migration guidée avec Claude :** un fichier `CLAUDE.md` fait faire à Claude Code un état des lieux, lui fait poser les questions utiles, préparer la configuration et lancer la migration seulement après accord.
+- **Option `--plan` :** simulation qui affiche ce que le script ferait, sans rien modifier dans Chrome.
+- **Fichier `correspondance.local.txt` :** règles personnelles, jamais versionnées, qui l'emportent sur `correspondance.txt`.
 
 ### Modifié
 
 - En mode « un profil par espace », les onglets épinglés et ouverts arrivent **à plat dans la barre de favoris**, sans les dossiers « Arc – onglets épinglés » et « Arc – onglets ouverts ».
+- Lancé sans terminal (par un autre programme), le script ne considère plus l'absence de réponse comme un « oui » : sans `--oui`, il s'arrête sans rien modifier.
 
 ### Retiré
 
@@ -27,6 +31,7 @@ Il suit le format [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les 
 
 ### Corrigé
 
+- Les commentaires en fin de ligne dans `correspondance.txt` (`Ancien client = ignorer   # …`), donnés en exemple dans le README, rendaient la règle inopérante.
 - La documentation annonçait une intégration continue et des tests absents du dépôt. Les tests sont maintenant présents, et les commandes de vérification sont décrites dans le README.
 
 ## [1.0.0] - 2026-10-27

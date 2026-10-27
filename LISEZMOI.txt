@@ -48,6 +48,10 @@ Le script te proposera deux options :
 Pour NE PAS migrer certains espaces : ouvre « correspondance.txt » et ajoute
 une ligne « Nom de l'espace = ignorer » par espace.
 
+Pour voir ce que le script ferait, sans rien modifier dans Chrome :
+
+    bash ~/Downloads/Kit-migration-Arc-Chrome/migrer-arc-vers-chrome.sh --plan
+
 
 3. DONNER L'ACCÈS COMPLET AU DISQUE À TERMINAL
 ----------------------------------------------
@@ -153,6 +157,7 @@ Google : cela efface aussi tes mots de passe et tout le reste du compte.
       --profil "Nom du profil"         profil Chrome qui reçoit tout (mode unique)
       --remplacer                      vider l'historique et les favoris des profils
                                        Chrome ciblés avant d'y mettre le contenu d'Arc
+      --plan                           simulation, sans rien modifier dans Chrome
       --dossiers                       ranger les onglets dans deux dossiers
                                        au lieu de les mettre à plat
       --forcer                         refaire une migration déjà faite

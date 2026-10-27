@@ -20,6 +20,7 @@ Ce kit transfère tes espaces Arc vers Google Chrome sur Mac, en une seule comma
 - [Prérequis](#prérequis)
 - [Installation](#installation)
 - [Utilisation](#utilisation)
+- [Migrer avec l'aide de Claude](#migrer-avec-laide-de-claude)
 - [Options](#options)
 - [Des favoris qui ne viennent pas d'Arc ?](#des-favoris-qui-ne-viennent-pas-darc-)
 - [Sécurité et confidentialité](#sécurité-et-confidentialité)
@@ -94,16 +95,37 @@ Ancien client = ignorer        # cet espace n'est pas migré
 Clients = Travail              # l'espace « Clients » va dans le profil Chrome « Travail »
 ```
 
+Tu as cloné le dépôt avec Git ? Écris plutôt tes règles dans `correspondance.local.txt`, à côté. Ce fichier n'est jamais versionné, et ses règles l'emportent sur celles de `correspondance.txt` : tes noms d'espaces ne partent pas sur GitHub par erreur.
+
+## Migrer avec l'aide de Claude
+
+Le dépôt contient un fichier [`CLAUDE.md`](CLAUDE.md). Quand tu ouvres le kit avec [Claude Code](https://code.claude.com/docs) sur ton Mac, Claude :
+
+1. vérifie que tout est prêt (Mac, Python, accès complet au disque) ;
+2. fait l'état des lieux sans rien modifier : tes espaces Arc, tes profils Chrome, les favoris de ton compte Google ;
+3. te pose quelques questions : organisation, ajout ou remise à zéro, rangement des onglets, espaces à exclure ;
+4. prépare `correspondance.local.txt`, te demande de quitter Arc et Chrome, puis te montre le plan final ;
+5. lance la migration seulement après ton accord, et te résume le résultat.
+
+Pour démarrer :
+
+1. Donne l'accès complet au disque à l'app qui fait tourner Claude Code (Terminal, ou l'app Claude).
+2. Ouvre le dossier du kit avec Claude Code, par exemple `cd ~/Downloads/Kit-migration-Arc-Chrome && claude`.
+3. Écris : « Aide-moi à migrer mes espaces Arc vers Chrome ».
+
+> La migration doit tourner sur ton Mac. Une session Claude dans le cloud n'a pas accès à tes navigateurs : elle peut t'expliquer la marche à suivre, pas faire la migration.
+
 ## Options
 
 ```text
 --mode espaces       un profil Chrome par espace Arc
 --mode unique        tous les espaces dans un seul profil Chrome
 --profil "Nom"       profil Chrome qui reçoit tout (mode unique)
+--plan               simulation : affiche ce que le script ferait, sans rien modifier dans Chrome
 --remplacer          vide l'historique et les favoris des profils Chrome ciblés avant d'y mettre le contenu d'Arc
 --dossiers           range les onglets dans « Arc – onglets épinglés / ouverts » au lieu de les mettre à plat
 --forcer             refait une migration déjà faite
---oui                répond oui à toutes les questions
+--oui                répond oui à toutes les questions (indispensable quand un autre programme lance le script)
 --diagnostic         montre d'où viennent les favoris de chaque profil, sans rien modifier
 --version / --aide
 ```
@@ -175,6 +197,7 @@ bash scripts/construire-archive.sh         # archive de release dans dist/
 ├── remplacer-tous-les-espaces.sh  raccourci : --mode espaces --remplacer
 ├── diagnostic-favoris.sh       raccourci : --diagnostic
 ├── correspondance.txt          modèle d'exclusions et de redirections
+├── CLAUDE.md                   instructions pour Claude : migration guidée, règles de contribution
 ├── LISEZMOI.txt                mode d'emploi pour l'utilisateur final
 ├── tests/                      tests unitaires et de bout en bout, données factices
 └── scripts/                    construction de l'archive de release

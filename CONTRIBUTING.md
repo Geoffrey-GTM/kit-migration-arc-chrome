@@ -38,6 +38,7 @@ Les tests utilisent des données **factices**, créées par `tests/fixtures.py`.
 - **Toujours sauvegarder un fichier Chrome avant de le modifier** (fonction `backup`). Écrire de façon atomique (`write_json`) ou dans une transaction SQLite.
 - **Toute modification de Chrome doit pouvoir être relancée sans doublon.**
 - **Ajoute un test** pour chaque correctif ou nouvelle fonction.
+- **Tiens [CLAUDE.md](CLAUDE.md) à jour** : il guide Claude pendant une migration. Toute nouvelle option ou étape doit y apparaître.
 
 ### Commits et pull requests
 
