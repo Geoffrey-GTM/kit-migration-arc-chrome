@@ -1,6 +1,5 @@
 # Kit de migration Arc → Google Chrome
 
-[![Dernière version](https://img.shields.io/github/v/release/Geoffrey-GTM/kit-migration-arc-chrome?label=version)](https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/latest)
 [![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 ![Plateforme : macOS](https://img.shields.io/badge/plateforme-macOS-lightgrey.svg)
 
@@ -51,10 +50,11 @@ Avec l'option `--dossiers`, les onglets épinglés et ouverts sont plutôt rang�
 
 ## Installation
 
-1. Télécharge `Kit-migration-Arc-Chrome-vX.Y.Z.zip` depuis la page [Releases](https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/latest).
-2. Décompresse-le dans ton dossier **Téléchargements**. Tu obtiens un dossier `Kit-migration-Arc-Chrome`.
+1. Sur la [page du dépôt](https://github.com/Geoffrey-GTM/kit-migration-arc-chrome), clique sur le bouton vert **Code**, puis sur **Download ZIP**.
+2. Décompresse le fichier dans ton dossier **Téléchargements**. Tu obtiens un dossier `kit-migration-arc-chrome-main`.
+3. Renomme ce dossier en `Kit-migration-Arc-Chrome`.
 
-Pas de fichier `.zip` dans la release ? Utilise **Code › Download ZIP** sur cette page, puis renomme le dossier décompressé `kit-migration-arc-chrome-main` en `Kit-migration-Arc-Chrome`.
+Le dossier contient aussi des fichiers qui ne servent qu'au développement (`tests/`, `scripts/`…). Tu peux les ignorer.
 
 ## Utilisation
 

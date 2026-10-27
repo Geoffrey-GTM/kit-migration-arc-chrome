@@ -35,6 +35,6 @@ Le script manipule des données de navigation sensibles. Sont notamment concern�
 
 ## Bonnes pratiques pour les utilisateurs
 
-- Télécharge le kit uniquement depuis la page [Releases](https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases) de ce dépôt.
+- Télécharge le kit uniquement depuis [ce dépôt](https://github.com/Geoffrey-GTM/kit-migration-arc-chrome).
 - Tu peux retirer l'« Accès complet au disque » à Terminal une fois la migration terminée.
 - Supprime le dossier `resultat-migration/` quand tout te convient : il contient une copie de ton historique et de tes favoris.

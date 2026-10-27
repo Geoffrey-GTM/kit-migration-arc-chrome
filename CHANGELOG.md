@@ -47,7 +47,3 @@ Il suit le format [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les 
 - **Secours :** un fichier de favoris HTML par espace, et des instructions claires quand macOS bloque l'accès aux dossiers de Chrome.
 - **Relance sans doublon :** le script garde la trace de ce qui a déjà été migré.
 - **Qualité :** tests automatisés sur Linux et macOS, et intégration continue (ShellCheck, Ruff).
-
-[Non publié]: https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/tag/v1.1.0
-[1.0.0]: https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/tag/v1.0.0

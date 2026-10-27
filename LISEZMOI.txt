@@ -16,10 +16,12 @@ Durée : environ 15 minutes.
 
 1. RÉCUPÉRER LE KIT
 -------------------
-Télécharge la dernière version (Kit-migration-Arc-Chrome-vX.Y.Z.zip) :
-    https://github.com/Geoffrey-GTM/kit-migration-arc-chrome/releases/latest
+Ouvre la page du kit :
+    https://github.com/Geoffrey-GTM/kit-migration-arc-chrome
+Clique sur le bouton vert « Code », puis sur « Download ZIP ».
 Double-clique sur le fichier .zip dans ton dossier Téléchargements.
-Tu obtiens un dossier « Kit-migration-Arc-Chrome ». Laisse-le dans Téléchargements,
+Tu obtiens un dossier « kit-migration-arc-chrome-main » : renomme-le
+« Kit-migration-Arc-Chrome ». Laisse-le dans Téléchargements,
 et garde ensemble tous ses fichiers.
 
 
